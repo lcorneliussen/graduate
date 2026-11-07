@@ -7,7 +7,7 @@ last. Every step leaves a home that can be found again, and says which machine
 it is on.
 
 graduate is an agent skill. It works with Claude Code, Codex, pi, Hermes and
-any agent that reads `~/.agents/skills`. A CLI comes later.
+any agent that reads `~/.agents/skills`.
 
 ## Stages
 
@@ -102,7 +102,6 @@ test/e2e.sh           fresh agents follow the skill in throwaway folders
 ```
 
 The scripts are thin glue around `jq`, `git` and `herdr`, so they are bash.
-The CLI that will take their place is planned in Rust.
 
 ## Tests
 
@@ -116,17 +115,11 @@ The live tests and `e2e.sh` add trust entries and herdr spaces for their
 throwaway folders, and remove them again at the end. `e2e.sh` keeps each
 agent's prompt and answer in `test/e2e-logs/`, which is gitignored.
 
-## Status and plans
+## Plans
 
-0.1.0 is the skill. Moving work between machines, a session-start hook that
-says which machine, a pre-push privacy gate, and the `graduate` CLI with its
-registry are planned in the [issues](https://github.com/lcorneliussen/graduate/issues).
-The pinned **Design decisions** issue holds every decision and its reason.
-
-graduate stands alone. When [omaego](https://github.com/lcorneliussen/omaego)
-is installed, later versions will also use it: for machine names, for which ego
-a project belongs to, for the private names to keep out of public repos, and to
-open a homed project remotely.
+What comes next, and every decision with its reason, lives in the
+[issues](https://github.com/lcorneliussen/graduate/issues). Start with the
+pinned **Design decisions** issue.
 
 ## License
 

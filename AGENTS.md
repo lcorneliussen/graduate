@@ -30,7 +30,7 @@ are Markdown (`SKILL.md`), linked into each agent's skills folder the way
 Omarchy links its own (`~/.agents/skills`, `~/.claude/skills`,
 `~/.codex/skills`, `~/.pi/agent/skills`, `~/.hermes/skills`): `install.sh`.
 The skill's helpers in `skill/scripts/` are bash, as thin glue around `jq`,
-`git` and `herdr`; the Rust CLI (#13) takes their place.
+`git` and `herdr`.
 
 ## Verifying
 
