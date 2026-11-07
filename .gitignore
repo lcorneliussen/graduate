@@ -1,2 +1,5 @@
 # machine-specific, never pushed
 *.local.md
+
+# e2e agent logs name this machine
+test/e2e-logs/

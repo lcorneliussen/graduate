@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# trust <folder>: mark a folder this run created as trusted for Claude Code and
+# Codex, so a fresh agent there does not stop at its trust prompt.
+# Each file is rewritten by running agents, so: read, change one key, write a
+# new file beside it and rename it into place. Safe to run twice.
+# Test overrides: GRADUATE_CLAUDE_JSON, GRADUATE_CODEX_TOML.
+set -euo pipefail
+die() { echo "trust: $*" >&2; exit 1; }
+[[ $# == 1 ]] || die "usage: trust <folder>"
+dir=$(readlink -f "$1")
+[[ -d $dir ]] || die "not a folder: $1"
+[[ $dir != / && $dir != "$HOME" ]] || die "refusing to trust $dir"
+[[ $dir != *[\"\\]* ]] || die "folder name has a quote or backslash: $dir"
+
+replace() { # replace <file> <new-content-file>: same mode, atomic rename
+  chmod --reference="$1" "$2" 2>/dev/null || true
+  mv -f "$2" "$1"
+}
+
+claude=${GRADUATE_CLAUDE_JSON:-${CLAUDE_CONFIG_DIR:-$HOME}/.claude.json}
+if [[ -f $claude ]]; then
+  if [[ $(jq --arg p "$dir" '.projects[$p].hasTrustDialogAccepted // false' "$claude") == true ]]; then
+    echo "claude: already trusted ($claude)"
+  else
+    tmp=$(mktemp "$claude.graduate.XXXXXX")
+    jq --arg p "$dir" '.projects = (.projects // {}) | .projects[$p] = ((.projects[$p] // {}) + {hasTrustDialogAccepted: true})' "$claude" >"$tmp" ||
+      { rm -f "$tmp"; die "could not update $claude"; }
+    replace "$claude" "$tmp"
+    echo "claude: trusted ($claude)"
+  fi
+else
+  echo "claude: skipped, no $claude"
+fi
+
+codex=${GRADUATE_CODEX_TOML:-${CODEX_HOME:-$HOME/.codex}/config.toml}
+header="[projects.\"$dir\"]"
+if [[ -d $(dirname "$codex") ]]; then
+  touch "$codex"
+  if grep -qxF "$header" "$codex"; then
+    level=$(awk -v h="$header" '$0==h{s=1;next} /^\[/{s=0} s && /^trust_level *=/{print; exit}' "$codex")
+    if [[ $level =~ \"trusted\" ]]; then
+      echo "codex: already trusted ($codex)"
+    else
+      die "codex: $header exists with '${level:-no trust_level}'; leaving it to the user"
+    fi
+  else
+    tmp=$(mktemp "$codex.graduate.XXXXXX")
+    { cat "$codex"; [[ -s $codex && $(tail -c1 "$codex") != "" ]] && echo
+      [[ -s $codex ]] && echo
+      echo "$header"; echo 'trust_level = "trusted"'; } >"$tmp"
+    replace "$codex" "$tmp"
+    echo "codex: trusted ($codex)"
+  fi
+else
+  echo "codex: skipped, no $(dirname "$codex")"
+fi

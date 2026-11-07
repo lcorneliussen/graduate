@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# space <folder> [label]: open the folder as a herdr space without taking
+# focus. Prints the workspace id and the pane id. Label: the folder's name.
+set -euo pipefail
+die() { echo "space: $*" >&2; exit 1; }
+[[ $# -ge 1 ]] || die "usage: space <folder> [label]"
+dir=$(readlink -f "$1")
+[[ -d $dir ]] || die "not a folder: $1"
+label=${2:-$(basename "$dir")}
+command -v herdr >/dev/null || die "herdr is not installed"
+herdr status server >/dev/null 2>&1 || die "no herdr server running"
+existing=$(herdr api snapshot 2>/dev/null | jq -r --arg d "$dir" \
+  '[.. | objects | select(has("cwd") and has("pane_id") and .cwd == $d)] | .[0].pane_id // empty')
+[[ -z $existing ]] || echo "note: pane $existing is already open on $dir" >&2
+out=$(herdr workspace create --cwd "$dir" --label "$label" --no-focus)
+jq -r '.result | "workspace \(.workspace.workspace_id)\npane \(.root_pane.pane_id)\nlabel \(.workspace.label)"' <<<"$out"

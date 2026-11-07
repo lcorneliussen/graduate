@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# handover <pane-id> <claude|codex|pi> <brief-file> [name]: start an agent in
+# a herdr pane that sits at a shell prompt, send it the brief, wait for its
+# first answer and print it.
+set -euo pipefail
+die() { echo "handover: $*" >&2; exit 1; }
+[[ $# -ge 3 ]] || die "usage: handover <pane-id> <claude|codex|pi> <brief-file> [name]"
+pane=$1 kind=$2 brief=$3 name=${4:-graduate}
+[[ -s $brief ]] || die "empty or missing brief: $brief"
+# The same unattended modes Omarchy's own agent launcher uses.
+case $kind in
+  claude) args=(--permission-mode auto) ;;
+  # Codex otherwise stops at its "update available" prompt before taking any input.
+  codex) args=(--approve-for-me -c check_for_update_on_startup=false) ;;
+  pi) args=() ;;
+  *) die "unsupported agent: $kind (claude, codex or pi)" ;;
+esac
+if ! herdr agent start "$name" --kind "$kind" --pane "$pane" --timeout 60000 -- "${args[@]}" >/dev/null; then
+  # Show what the agent is stuck on (a login, an update or a trust prompt).
+  herdr pane read "$pane" --source recent --lines 30 >&2 || true
+  die "could not start $kind in $pane; it is waiting on the screen above"
+fi
+herdr agent prompt "$pane" "$(cat "$brief")" --wait --timeout "${GRADUATE_HANDOVER_TIMEOUT:-900000}" >/dev/null ||
+  echo "handover: no answer before the timeout; read it later with: herdr agent read $pane" >&2
+herdr agent read "$pane" --source recent-unwrapped --lines "${GRADUATE_HANDOVER_LINES:-80}"

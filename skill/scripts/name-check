@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# name-check <name>...: is a project name free? Checks ~/Work/<name>, PATH,
+# pacman and the AUR, and a GitHub repo under the signed-in account.
+set -uo pipefail
+[[ $# -ge 1 ]] || { echo "usage: name-check <name>..." >&2; exit 2; }
+work=${GRADUATE_WORK_ROOT:-$HOME/Work}
+owner=$(gh api user -q .login 2>/dev/null || true)
+for n in "$@"; do
+  taken=()
+  [[ -e $work/$n ]] && taken+=("folder $work/$n")
+  command -v "$n" >/dev/null && taken+=("command $(command -v "$n")")
+  pacman -Si "$n" >/dev/null 2>&1 && taken+=("pacman package")
+  aur=$(curl -fsS --max-time 5 "https://aur.archlinux.org/rpc/v5/info?arg[]=$n" 2>/dev/null | jq -r '.resultcount // 0' 2>/dev/null)
+  [[ ${aur:-0} -gt 0 ]] && taken+=("AUR package")
+  [[ -n $owner ]] && gh repo view "$owner/$n" >/dev/null 2>&1 && taken+=("github $owner/$n")
+  if ((${#taken[@]})); then
+    printf '%s: taken (%s)\n' "$n" "$(IFS=,; echo "${taken[*]}" | sed 's/,/, /g')"
+  else
+    echo "$n: free"
+  fi
+done
