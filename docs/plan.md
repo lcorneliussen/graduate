@@ -70,6 +70,14 @@ Shared first steps:
    check its summary against what was meant. The first handover, of this very
    project, is described in its own `HANDOVER.local.md`.
 
+   **Auto-trust the new home.** A fresh agent stops at its folder-trust prompt
+   before it takes a prompt. graduate created the folder and knows what is in
+   it, so it marks it trusted before starting the agent: Claude keeps
+   `projects["<path>"].hasTrustDialogAccepted = true` in `~/.claude.json`;
+   Codex keeps a per-project `trust_level` in `~/.codex/config.toml`. Both
+   files are rewritten by running agents: write them atomically (read, change
+   one key, rename into place), and only for folders graduate itself created.
+
 Open: whether the shared steps live in one `graduate` skill the others call,
 or are repeated in each. One shared skill is less drift; five standalone ones
 trigger more reliably.
