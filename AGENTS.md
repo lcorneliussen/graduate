@@ -1,6 +1,9 @@
 # Working on graduate
 
-Read [docs/plan.md](docs/plan.md) first. If `HANDOVER.local.md` exists, read it
+The plan lives in the GitHub issues of `lcorneliussen/graduate`: read the pinned
+**Design decisions** issue (#1) first, then the open milestone's issues
+(`gh issue list`). Issues labelled `decision` wait for the user.
+Record new decisions there, not in the source. If `HANDOVER.local.md` exists, read it
 next: it is the untracked, machine-specific part of how this project started.
 
 ## This repo is meant to be public

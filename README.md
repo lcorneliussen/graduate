@@ -6,8 +6,9 @@ own folder, git managed, on GitHub when it may be public, and on a stack meant
 to last. And move work between machines at any stage without losing track of
 where it lives.
 
-Nothing is built yet. This repo holds the plan ([docs/plan.md](docs/plan.md))
-and the rules for working on it ([AGENTS.md](AGENTS.md)).
+Nothing is built yet. The plan and its decisions live in the
+repo's issues (start with the pinned **Design decisions**); the rules for
+working on it are in [AGENTS.md](AGENTS.md).
 
 ## The idea in one table
 
@@ -24,11 +25,11 @@ works here, why not there".
 
 ## Parts
 
-- **Skills** (first): `graduate-try`, `graduate-project`, `graduate-cli`,
-  `graduate-plugin`, `graduate-app`. Each first detects where it is called from
-  (a try, an unrelated conversation, a project) and follows that flow; each
-  clarifies scope when a conversation covered more than one thing, and helps
-  find a name on the spot.
+- **Skill** (first): one `graduate` skill. It works out where it is called
+  from and takes the work one stage up: a conversation becomes a try (a
+  permanent dated folder, no naming fuss), a try becomes a named project, and a
+  project gets its shape: a CLI, a plugin or an app. It clarifies scope when a
+  conversation covered more than one thing.
 - **CLI** `graduate` (later), in Rust with ratatui: `status`, `move <machine>`
   (emigrate), `graduate`, `open`. It calls agent CLIs for judgement: naming,
   privacy review, "is this ready", porting a stack.
