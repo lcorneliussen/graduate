@@ -11,11 +11,16 @@ is not reopened from scratch.
 | **Try** | `~/Work/tries/YYYY-MM-DD-<subject>/`, no git | Zip, copy, unpack on the target; leave a tombstone |
 | **Project** | `~/Work/<name>/`, git | Set up the main dev home on the target. Fail closed when anything is not on the remote: unpushed branches, stashes, untracked files |
 
-**Tombstone.** Emigrating a try or conversation leaves in the old folder:
+**Tombstone.** Emigrating a try leaves in the old folder:
 `backup-YYYY-MM-DD.zip` and an `AGENTS.md` saying "emigrated to
 `<machine>:<path>` on `<date>`; do not work here". It also appends a line to
 `~/Work/emigrated.jsonl`, which `~/Work/AGENTS.md` points at, so an agent that
 lands in a dead folder is told where the work went.
+
+**Conversations get no tombstone file.** The original session file stays
+untouched as the backup, and the line in `~/Work/emigrated.jsonl` records the
+machine, path and session id. graduate never writes into an agent's own
+session store.
 
 "Emigrate" is the word from the side being left (the arriving side
 immigrates). The CLI verb is the neutral `move`.
@@ -77,6 +82,8 @@ Shared first steps:
    Codex keeps a per-project `trust_level` in `~/.codex/config.toml`. Both
    files are rewritten by running agents: write them atomically (read, change
    one key, rename into place), and only for folders graduate itself created.
+   Codex's format is confirmed: `[projects."<path>"]` with
+   `trust_level = "trusted"`.
 
 Open: whether the shared steps live in one `graduate` skill the others call,
 or are repeated in each. One shared skill is less drift; five standalone ones
@@ -127,8 +134,10 @@ preference.
 
 1. **Writing only.** `~/Work/AGENTS.md` (stages, homes, rules, pointer to
    `emigrated.jsonl`). The skills, starting with `graduate-try` replacing
-   `as-try`, kept in this repo and linked out.
-2. **The machine check** as a session-start hook: "on X, driven from Y".
+   `as-try`, kept in this repo and linked out. This includes auto-trusting
+   the new home in the shared handover step.
+2. **The machine check** as a session-start hook: "on X, driven from Y", for
+   claude, codex and pi.
 3. **The privacy gate**, installed by `graduate-project`.
 4. **The CLI and registry.** `open` delegates to omaego remotes when present.
 5. **herdr-app**: homes become spaces in each ego's window, once omaego
